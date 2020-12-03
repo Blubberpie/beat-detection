@@ -1,0 +1,7 @@
+/target
+/src/sounds
+/src/png
+*.iml
+*.lock
+/.idea
+/research
