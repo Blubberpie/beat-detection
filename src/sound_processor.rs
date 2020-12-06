@@ -10,7 +10,7 @@ use std::io::BufReader;
 
 use rustfft::FFTplanner;
 use rustfft::num_complex::Complex;
-use rustfft::num_traits::Zero;
+use rustfft::num_traits::{Zero, Pow};
 use std::f32::consts::PI;
 
 pub fn load_file() -> WavReader<BufReader<File>> {
@@ -49,6 +49,13 @@ pub fn get_fft(input: &mut Vec<Complex<f32>>, num_samples: usize) -> Vec<Complex
     spectrum
 }
 
+pub fn get_freq_amplitudes(input: &mut Vec<Complex<f32>>) -> Vec<f32> {
+    get_fft(input, input.len())
+        .iter()
+        .map(|sample| sample.norm_sqr())
+        .collect::<Vec<f32>>()
+}
+
 /// Returns the maximum frequency of a given spectrum vector
 pub fn find_max_freq(spectrum: Vec<Complex<f32>>, num_samples: usize) -> f32 {
     spectrum
@@ -63,8 +70,8 @@ pub fn find_max_freq(spectrum: Vec<Complex<f32>>, num_samples: usize) -> f32 {
 ///
 /// A **Hamming window** takes care of spectral leakage when performing
 /// FFT or sampling on audio.
-pub fn hamming_window(samples: &Vec<Complex<f32>>, num_samples: usize) -> Vec<Complex<f32>> {
-
+pub fn hamming_window(samples: &Vec<Complex<f32>>) -> Vec<Complex<f32>> {
+    let n_samples = samples.len();
     /// Returns the hamming weight of a given sample
     ///
     /// alpha - ( beta * cos( (2 * pi * n) / N - 1 ) )
@@ -81,6 +88,6 @@ pub fn hamming_window(samples: &Vec<Complex<f32>>, num_samples: usize) -> Vec<Co
         .iter()
         .cloned()
         .enumerate()
-        .map(|(i, sample)| hamming(i, sample, num_samples))
+        .map(|(i, sample)| hamming(i, sample, n_samples))
         .collect()
 }
