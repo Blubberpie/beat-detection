@@ -13,11 +13,11 @@ use rustfft::num_complex::Complex;
 use rustfft::num_traits::{Zero, Pow};
 use std::f32::consts::PI;
 
-pub fn load_file() -> WavReader<BufReader<File>> {
+pub fn load_file(song_title: &str) -> WavReader<BufReader<File>> {
     let mut path = env::current_dir().unwrap();
     path.push("src");
     path.push("sounds");
-    path.push("tetris");
+    path.push(song_title);
     path.set_extension("wav");
 
     let mut reader = hound::WavReader::open(path).unwrap();

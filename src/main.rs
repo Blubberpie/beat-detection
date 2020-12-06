@@ -11,7 +11,7 @@ use std::sync::Arc;
 use std::fmt::Pointer;
 
 fn main() {
-    let mut reader = sound_processor::load_file();
+    let mut reader = sound_processor::load_file("eagles");
     let num_samples_total = reader.len() as usize;
 
     let mut raw_samples = reader.samples::<i16>(); // S = bits per sample (i16 in this case)
