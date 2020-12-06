@@ -1,43 +1,52 @@
+#![allow(unused)]
+
 mod sound_processor;
 mod visualizer;
 
-use rustfft;
-use gnuplot::{Figure, Caption, Color};
+use rayon::prelude::*;
+use std::time::SystemTime;
 use std::env;
-
 use std::sync::Arc;
+use std::fmt::Pointer;
+
+const BUFFER_SIZE: usize = 1024;
+const SUB_BAND_SIZE: usize = 32;
+const ENERGY_BUFF_SIZE: usize = 43;
 
 fn main() {
+    let now = SystemTime::now();
     let mut reader = sound_processor::load_file();
-    let samp = reader.samples::<i16>(); // S = bits_per_sample (i16 in this case)
-    let data = samp.flatten().collect::<Vec<_>>();
-    let mut ind = Vec::new();
+    let num_samples_total = reader.len() as usize;
+    println!("{:?}", now.elapsed());
 
-    for i in 0..data.len() {
-        ind.push(i);
+    let mut raw_samples = reader.samples::<i16>();
+
+    let now = SystemTime::now();
+    // S = bits_per_sample (i16 in this case)
+    let samples = sound_processor::to_complex(raw_samples);
+    println!("{:?}", now.elapsed());
+    // let start = 100000;
+
+    // let now = SystemTime::now();
+    // let mut hamming_samples = sound_processor::hamming_window(&samples[start..start + BUFFER_SIZE].to_vec(), BUFFER_SIZE);
+    // println!("{:?}", now.elapsed());
+    // // println!("{:?}", hamming_samples);
+    // let spectrum_slice = sound_processor::get_fft(&mut hamming_samples, BUFFER_SIZE);
+    // println!("{:?}", spectrum_slice);
+    //
+    // let now = SystemTime::now();
+    // println!("{:?}", sound_processor::find_max_freq(spectrum_slice, BUFFER_SIZE));
+    // println!("{:?}", now.elapsed());
+
+}
+
+// Curried function to print run time of implementations
+fn time<F, T>(func: F) -> impl Fn(T) -> T
+    where F: Fn(T) -> T {
+    move |input| {
+        let now = SystemTime::now();
+        let ret = func(input);
+        println!("{:?}", now.elapsed());
+        ret
     }
-
-    let mut fg = Figure::new();
-
-    fg.axes2d().lines(&ind, &ind, &[Caption("A line"), Color("black")]);
-    fg.show();
-    // println!("{:?}", data);
-
-    // let mut path = env::current_dir().unwrap();
-    // path.push("src");
-    // path.push("png");
-    // path.push("test");
-    // path.set_extension("png");
-    // println!("{:?}", fg.save_to_png(path, 700, 600));
-
-    // let mut input: Vec<Complex<f32>> = vec![Complex::zero(); 1234];
-    // let mut output: Vec<Complex<f32>> = vec![Complex::zero(); 1234];
-    //
-    // let mut planner = FFTplanner::new(false);
-    // let fft = planner.plan_fft(1234);
-    // fft.process(&mut input, &mut output);
-    //
-    // let fft_clone = Arc::clone(&fft);
-    //
-    // println!("{:?}", input)
 }
