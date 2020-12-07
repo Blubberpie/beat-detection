@@ -13,6 +13,8 @@ use rustfft::num_complex::Complex;
 use rustfft::num_traits::{Zero, Pow};
 use std::f32::consts::PI;
 
+/// Takes in the title of the song (without the extension) and
+/// returns a WavReader<> iterator of the audio
 pub fn load_file(song_title: &str) -> WavReader<BufReader<File>> {
     let mut path = env::current_dir().unwrap();
     path.push("src");
@@ -31,8 +33,14 @@ pub fn load_file(song_title: &str) -> WavReader<BufReader<File>> {
 /// * `samples` - An iterator of wav samples
 pub fn to_complex(samples: WavSamples<BufReader<File>, i16>) -> Vec<Complex<f32>> {
     samples
-        .map(|x| Complex::new(x.unwrap() as f32, 0f32))
+        .map(|x| Complex::new(*x.as_ref().unwrap() as f32, 0f32))
         .collect::<Vec<Complex<f32>>>()
+    // parallelization doesn't seem to perform any better here
+    // samples
+    //     .collect::<Vec<_>>()
+    //     .par_iter()
+    //     .map(|x| Complex::new(*x.as_ref().unwrap() as f32, 0f32))
+    //     .collect::<Vec<Complex<f32>>>()
 }
 
 /// Computes and returns the FFT of complex samples
@@ -49,6 +57,7 @@ pub fn get_fft(input: &mut Vec<Complex<f32>>, num_samples: usize) -> Vec<Complex
     spectrum
 }
 
+/// Get the squared norm of each complex number
 pub fn get_freq_amplitudes(input: &mut Vec<Complex<f32>>) -> Vec<f32> {
     get_fft(input, input.len())
         .iter()

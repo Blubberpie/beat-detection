@@ -2,6 +2,7 @@
 
 use gnuplot::{Figure, Caption, Color};
 
+/// Not implemented!
 pub fn show_plot(data: Vec<i16>) {
 
     let mut fg = Figure::new();
